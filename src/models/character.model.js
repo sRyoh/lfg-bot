@@ -2,7 +2,7 @@ const Sequelize = require('sequelize');
 
 module.exports = (sequelize) => {
     sequelize.define('Character', {
-        char_id: {
+        character_id: {
             type: Sequelize.INTEGER,
             unique: true,
             autoIncrement: true,

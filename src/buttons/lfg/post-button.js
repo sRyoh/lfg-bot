@@ -6,58 +6,45 @@ module.exports = {
         name: 'post-button',
     },
     async execute(db, interaction) {
-        const embed = new MessageEmbed()
-            .setColor('#0399af')
-            .setTitle('Lobby')
-            // .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png' })
-            .setDescription('Lobby for X raid')
-            .setThumbnail('https://i.imgur.com/AfFp7pu.png')
-            .setImage('https://i.imgur.com/AfFp7pu.png')
-
-        const buttons = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('join-button')
-                    .setLabel('Join')
-                    .setStyle('PRIMARY'),
-            )
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('leave-button')
-                    .setLabel('Leave')
-                    .setStyle('PRIMARY'),
-            )
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('kick-button')
-                    .setLabel('Kick')
-                    .setStyle('PRIMARY'),
-            )
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('delete-button')
-                    .setLabel('Delete')
-                    .setStyle('PRIMARY'),
-            );
-
         try {
-            // msg is used as future interactions will be based off of the msg's id
-            const msg = await interaction.channel.send({ embeds: [embed], components: [buttons], ephemeral: true });
+            const embed = interaction.message.embeds[0];
+            const buttons = new MessageActionRow()
+                .addComponents(
+                    new MessageButton()
+                        .setCustomId('join-button')
+                        .setLabel('Join')
+                        .setStyle('PRIMARY'),
+                )
+                .addComponents(
+                    new MessageButton()
+                        .setCustomId('leave-button')
+                        .setLabel('Leave')
+                        .setStyle('PRIMARY'),
+                )
+                .addComponents(
+                    new MessageButton()
+                        .setCustomId('kick-button')
+                        .setLabel('Kick')
+                        .setStyle('PRIMARY'),
+                )
+                .addComponents(
+                    new MessageButton()
+                        .setCustomId('delete-button')
+                        .setLabel('Delete')
+                        .setStyle('PRIMARY'),
+                );
 
-            const raid_id = msg.id;
-            const disc_id = interaction.user.id;
+            const account_id = interaction.user.id;
             const account = await db.models.Account.findOne({
                 attributes: ['message'],
-                where: { disc_id: disc_id }
+                where: { account_id: account_id }
             });
 
-            embed.addFields({
-                name: 'Info',
-                value: account.message
-            });
+            const msg = await interaction.channel.send({ embeds: [embed], components: [buttons], ephemeral: true });
 
-            await db.models.Raid.create({ raid_id: raid_id, disc_id: disc_id, message: account.message });
-            interaction.update({ content: "Successfully posted your lobby.", embeds: [], components: [], ephemeral: true });
+            // msg.id saved as future interactions will be need the original message's id
+            await db.models.Lobby.create({ lobby_id: msg.id, account_id: account_id, message: account.message, max_spots: 8 });
+            await interaction.update({ content: "Successfully posted your lobby.", embeds: [], components: [], ephemeral: true });
         }
         catch (error) {
             console.log(error);

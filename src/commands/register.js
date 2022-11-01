@@ -7,7 +7,8 @@ module.exports = {
         .addStringOption(option =>
             option.setName('character-name')
                 .setDescription('name of character')
-                .setRequired(true))
+                .setRequired(true)
+        )
         .addStringOption(option =>
             option.setName('class')
                 .setDescription('class of character')
@@ -26,33 +27,38 @@ module.exports = {
                     { name: 'Artillerist', value: 'Artillerist' },
                     { name: 'Deadeye', value: 'Deadeye' },
                     { name: 'Sharpshooter', value: 'Sharpshooter' },
+                    { name: 'Machinist', value: 'Machinist' },
                     { name: 'Bard', value: 'Bard' },
                     { name: 'Sorceress', value: 'Sorceress' },
+                    { name: 'Arcanist', value: 'Arcanist' },
                     { name: 'Shadowhunter', value: 'Shadowhunter' },
                     { name: 'Deathblade', value: 'Deathblade' },
-                ))
+                )
+        )
         .addIntegerOption(option =>
             option.setName('ilvl')
                 .setDescription('item level of character')
-                .setRequired(true)),
+                .setRequired(true)
+        ),
     async execute(db, interaction) {
         try {
-            const disc_id = interaction.user.id;
+            const account_id = interaction.user.id;
             const name = interaction.options.getString('character-name');
+            const char = await db.models.Character.findOne({ where: { name: name, account_id: account_id } });
+
             const _class = interaction.options.getString('class');
             const ilvl = interaction.options.getInteger('ilvl');
-            const character = await db.models.Character.findOne({ where: { name: name, disc_id: disc_id } });
-
-            if (character) {
-                await db.models.Character.update({ class: _class, ilvl: ilvl }, { where: { name: name, disc_id: disc_id } });
+            if (char) {
+                await db.models.Character.update({ class: _class, ilvl: ilvl }, {
+                    where: { name: name, account_id: account_id }
+                });
                 await interaction.reply({ content: 'Successfully edited character.', ephemeral: true });
             } else {
-                const account = await db.models.Account.findOne({ where: { disc_id: disc_id } });
-
                 // Create an account within database if the discord user does not already have one
-                if (!account) await db.models.Account.create({ disc_id: disc_id });
+                const account = await db.models.Account.findOne({ where: { account_id: account_id } });
+                if (!account) await db.models.Account.create({ account_id: account_id });
 
-                await db.models.Character.create({ disc_id: disc_id, name: name, class: _class, ilvl: ilvl });
+                await db.models.Character.create({ account_id: account_id, name: name, class: _class, ilvl: ilvl });
                 await interaction.reply({ content: 'Successfully added character.', ephemeral: true });
             }
         }

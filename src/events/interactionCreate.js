@@ -5,7 +5,6 @@ module.exports = {
 
         if (interaction.isCommand()) {
             const command = interaction.client.commands.get(interaction.commandName);
-
             if (!command) return;
 
             try {
@@ -16,7 +15,6 @@ module.exports = {
             }
         } else if (interaction.isSelectMenu()) {
             const selectMenu = interaction.client.selectMenus.get(interaction.customId);
-
             if (!selectMenu) return;
 
             try {
@@ -27,7 +25,6 @@ module.exports = {
             }
         } else if (interaction.isButton()) {
             const button = interaction.client.buttons.get(interaction.customId);
-
             if (!button) return;
 
             try {
